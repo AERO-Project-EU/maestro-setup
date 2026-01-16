@@ -1,0 +1,95 @@
+services:
+  ui-frontend:
+    image: ${DOCKER_REPO}/${PROJECT_NAME}-ui-theme:1.8.5
+    depends_on:
+      - ui-backend
+    restart: always
+    network_mode: "host"
+
+  ui-backend:
+    image: ${DOCKER_REPO}/${PROJECT_NAME}-ui-backend:1.8.6
+    environment:
+      PROJECT_NAME: ${PROJECT_NAME}
+      DATABASE_URL: ${DATABASE_IP}
+      DATABASE_PORT: ${DATABASE_PORT}
+      UI_URL: ${BACKEND_IP}
+      UI_PORT: ${UI_PORT}
+      K8S_PROMETHEUS_URL: ${K8S_PROMETHEUS_IP}
+      K8S_PROMETHEUS_PORT: ${K8S_PROMETHEUS_PORT}
+      KUBERNETES_PROVIDER_ENABLE: ${BACKEND_KUBERNETES_PROVIDER_ENABLE}
+      KUBERNETES_RESOURCES_ENABLE: ${KUBERNETES_RESOURCES_ENABLE}
+      SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED}
+      SPRINGDOC_API_DOCS_PATH: ${SPRINGDOC_API_DOCS_PATH}
+      SPRINGDOC_API_SWAGGER_UI_ENABLED: ${SPRINGDOC_API_SWAGGER_UI_ENABLED}
+      SPRINGDOC_API_SWAGGER_UI_PATH: ${SPRINGDOC_API_SWAGGER_UI_PATH}
+      ENABLE_KAFKA: ${BACKEND_ENABLE_KAFKA}
+      EXPORTER_URL: ${METRIC_EXPORTER_IP}
+      EXPORTER_PORT: ${METRIC_EXPORTER_PORT}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DATABASE_VOLUME_PATH}:/data
+    depends_on:
+      - database
+    ports:
+      - ${BACKEND_PORT}:8080
+    restart: always
+    network_mode: "host"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.2.3
+    environment:
+      PMA_HOST: ${DATABASE_IP}
+      PMA_PORT: ${DATABASE_PORT}
+    depends_on:
+      - database
+    ports:
+      - ${PHPMYADMIN_PORT}:80
+    restart: always
+    networks:
+      maestroDatabaseNetwork:
+
+  database:
+    container_name: "maestro_database"
+    image: mysql:5.5
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    ports:
+      - ${DATABASE_PORT}:3306
+    volumes:
+      - ${DATABASE_VOLUME_PATH}:/var/lib/mysql
+    restart: always
+    networks:
+      maestroDatabaseNetwork:
+
+  # aero knative serverless controller start
+  knative-controller:
+    image: registry.ubitech.eu/cs3/rnd/aero/knative-serverless-controller:1.0.4
+    container_name: serverless-controller
+    restart: unless-stopped
+    environment:
+      QUARKUS_HTTP_PORT: ${QUARKUS_HTTP_PORT}
+      MAESTRO_REST_API_URL: ${MAESTRO_REST_API_URL}
+      BACKEND_AUTH_SERVER_URL: ${BACKEND_AUTH_SERVER_URL}
+      BACKEND_CLIENT_ID: ${BACKEND_CLIENT_ID}
+      BACKEND_CLIENT_SECRET: ${BACKEND_CLIENT_SECRET}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_ADMIN_CLIENT: ${KEYCLOAK_ADMIN_CLIENT}
+      KEYCLOAK_ADMIN_REALM: ${KEYCLOAK_ADMIN_REALM}
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "http://localhost:${QUARKUS_HTTP_PORT}/q/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    network_mode: "host"
+
+# aero microservice end
+
+networks:
+  maestroDatabaseNetwork:
