@@ -1,13 +1,15 @@
 services:
   ui-frontend:
-    image: ${DOCKER_REPO}/${PROJECT_NAME}-ui-theme:1.8.5
+    #image: ${DOCKER_REPO}/aero-ui-theme:1.8.5
+    image: ghcr.io/aero-project-eu/aero-ui-theme:1.8.5
     depends_on:
       - ui-backend
     restart: always
     network_mode: "host"
 
   ui-backend:
-    image: ${DOCKER_REPO}/${PROJECT_NAME}-ui-backend:1.8.6
+    #image: ${DOCKER_REPO}/aero-ui-backend:1.8.6
+    image: ghcr.io/aero-project-eu/aero-ui-backend:1.8.6
     environment:
       PROJECT_NAME: ${PROJECT_NAME}
       DATABASE_URL: ${DATABASE_IP}
@@ -34,6 +36,7 @@ services:
       - ${BACKEND_PORT}:8080
     restart: always
     network_mode: "host"
+    platform: "linux/amd64"
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.2.3
@@ -47,6 +50,7 @@ services:
     restart: always
     networks:
       maestroDatabaseNetwork:
+    platform: "linux/amd64"
 
   database:
     container_name: "maestro_database"
@@ -61,10 +65,12 @@ services:
     restart: always
     networks:
       maestroDatabaseNetwork:
+    platform: "linux/amd64"
 
-  # aero knative serverless controller start
+  # knative serverless controller
   knative-controller:
-    image: registry.ubitech.eu/cs3/rnd/aero/knative-serverless-controller:1.0.4
+    #image: registry.ubitech.eu/cs3/rnd/aero/knative-serverless-controller:1.0.4
+    image: ghcr.io/aero-project-eu/knative-serverless-controller:1.0.4
     container_name: serverless-controller
     restart: unless-stopped
     environment:
@@ -88,8 +94,7 @@ services:
       timeout: 10s
       retries: 5
     network_mode: "host"
-
-# aero microservice end
+    platform: "linux/amd64"
 
 networks:
   maestroDatabaseNetwork:

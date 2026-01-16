@@ -1,6 +1,6 @@
 # Maestro Setup Guide
 
-This repository contains the Docker Compose configuration and environment setup required to run **Maestro** along with its UI, Backend, Database, PhpMyAdmin, and the Knative serverless controller.
+This repository contains the Docker Compose configuration and environment setup required to run **Maestro** with its UI, Backend, Database, PhpMyAdmin, and the Knative serverless controller.
 
 ## Prerequisites
 
@@ -117,7 +117,3 @@ http://<SERVER_IP>:3000
 <p align="start">
   <img src="figures/monitoring_deployed_application.png" alt="Component" width="600">
 </p>
-
-## todos
-
-- prepare public docker images
