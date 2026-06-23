@@ -117,3 +117,7 @@ http://<SERVER_IP>:3000
 <p align="start">
   <img src="figures/monitoring_deployed_application.png" alt="Component" width="700">
 </p>
+
+## Acknowledgements
+
+This work has been funded by the European Union under Horizon Europe grant 101092850 (project AERO).
